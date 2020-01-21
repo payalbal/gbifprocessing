@@ -14,3 +14,6 @@ syetm("python make_db.py")
 
 ## Delete script separated for safety
 system("python delete_lows.py")
+
+## Create summary tables
+system("make_summary_tables.py")

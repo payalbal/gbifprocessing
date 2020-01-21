@@ -1,3 +1,5 @@
+Authors: Usha Nattala, Payal Bal
+
 Please use the following steps to set up the gbif database.
 
 1. Activate python environment

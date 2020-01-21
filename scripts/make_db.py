@@ -102,13 +102,13 @@ def make_indices( connection ):
        cursor.execute("create index db_taxon_key_idx on clean_gbif(taxonkey);")
        cursor.execute("create index db_scname_idx on clean_gbif(scientificname);")
        cursor.execute("create index db_year_idx on clean_gbif(recyear);")
-       cursor.execute("alter table clean_gbif add constraint gbifid_pk primary key ( gbifid );")
        cursor.execute("create index db_country_idx on clean_gbif(countrycode);")
        cursor.execute("create index db_phylum_idx on clean_gbif(phylum);")
        cursor.execute("create index db_taxclass_idx on clean_gbif(taxclass);")
        cursor.execute("create index db_taxorder_idx on clean_gbif(taxorder);")
        cursor.execute("create index db_taxfamily_idx on clean_gbif(taxfamily);")
-
+       cursor.execute("alter table clean_gbif add constraint gbifid_pk primary key ( gbifid );")
+       
 
 def make_count_table( connection ):
     with connection.cursor() as cursor:
