@@ -23,4 +23,12 @@ Please use the following steps to set up the gbif database.
 
 3. Delete the csv under /data/csv if no longer required
 
-4. Enjoy!
+4. Create summary tables from cleaned data
+    python make_summary_tables.oy
+
+Enjoy!
+
+
+
+
+
