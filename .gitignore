@@ -2,7 +2,6 @@
 ##########################
 data/
 scripts/sample_py_sql.py
-scripts/
 
 # R files #
 ###########
