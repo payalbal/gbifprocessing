@@ -1,10 +1,10 @@
 import psycopg2
 
 connection = psycopg2.connect(
-    host="",
-    database="",
-    user="",
-    password='',
+    host="localhost",
+    database="qaeco_spatial",
+    user="qaeco",
+    password='B10D1v@rs1tyR0cks!!',
 )
 connection.autocommit = True
 
@@ -15,12 +15,13 @@ def summarize_db_by_country( connection ):
       cursor.execute("""
           DROP TABLE IF EXISTS country_counts;
           CREATE TABLE country_counts AS
-          SELECT NULLIF( countrycode, 'Unknown') AS countrycode, COUNT(species) AS numspecies
+          SELECT countrycode, COUNT(species) AS numspecies
           FROM clean_gbif
           GROUP BY countrycode;
       """)
       connection.commit()
       cursor.execute("create index db_numspecies_bycountry_idx on country_counts(numspecies);")
+      cursor.execute("update country_counts set countrycode = 'Uknown' where countrycode IS NULL;")
       cursor.execute("alter table country_counts add constraint country_ct_pk primary key ( countrycode );")
 
 summarize_db_by_country( connection )
@@ -28,40 +29,26 @@ summarize_db_by_country( connection )
   # ## To run directly in terminal:
   # tmux new -s counntry_counts
   # login to qaeco_spatial...
-  # 
-  # DROP TABLE IF EXISTS country_counts;
-  # CREATE TABLE public.country_counts AS SELECT countrycode, COUNT(species) AS numspecies FROM public.clean_gbif GROUP BY countrycode;
+  # run queries directly + need to granrt access after creating table
   # GRANT SELECT ON public.country_counts TO PUBLIC;
-  # create index db_numbycountry_idx on public.country_counts(numspecies);
-  # alter table public.country_counts add constraint country_ct_pk primary key ( countrycode );
-
-
-
+  
+  
 
 def summarize_db_by_phylum( connection ):
   with connection.cursor() as cursor:
       cursor.execute("""
           DROP TABLE IF EXISTS phylum_counts;
           CREATE TABLE phylum_counts AS
-          SELECT NULLIF( phylum, 'Unknown') AS phylum, COUNT(species) AS numspecies
+          SELECT phylum, COUNT(species) AS numspecies
           FROM clean_gbif
           GROUP BY phylum;
       """)
       connection.commit()
       cursor.execute("create index db_numbyphylum_idx on phylum_counts(numspecies);")
+      cursor.execute("update phylum_counts set phylum = 'Uknown' where phylum IS NULL;")
       cursor.execute("alter table phylum_counts add constraint phylum_ct_pk primary key ( phylum );")
 
 summarize_db_by_phylum( connection )
-
-  # ## To run directly in terminal:
-  # tmux new -s phylum_counts
-  # login to qaeco_spatial...
-  # 
-  # DROP TABLE IF EXISTS phylum_counts;
-  # CREATE TABLE public.phylum_counts AS SELECT phylum, COUNT(species) AS numspecies FROM public.clean_gbif GROUP BY phylum;
-  # GRANT SELECT ON public.phylum_counts TO PUBLIC;
-  # create index db_numbyphylum_idx on public.phylum_counts(numspecies);
-  # alter table phylum_counts add constraint phylum_ct_pk primary key ( phylum );
 
 
 
@@ -70,25 +57,16 @@ def summarize_db_by_taxclass( connection ):
       cursor.execute("""
           DROP TABLE IF EXISTS taxclass_counts;
           CREATE TABLE taxclass_counts AS
-          SELECT NULLIF( taxclass, 'Unknown') AS taxclass, COUNT(species) AS numspecies
+          SELECT taxclass, COUNT(species) AS numspecies
           FROM clean_gbif
           GROUP BY taxclass;
       """)
       connection.commit()
       cursor.execute("create index db_numbyclass_idx on taxclass_counts(numspecies);")
+      cursor.execute("update taxclass_counts set taxclass = 'Uknown' where taxclass IS NULL;")
       cursor.execute("alter table taxclass_counts add constraint taxclass_ct_pk primary key ( taxclass );")
 
 summarize_db_by_taxclass( connection )
-
-  # ## To run directly in terminal:
-  # tmux new -s taxclass_counts
-  # login to qaeco_spatial...
-  # 
-  # DROP TABLE IF EXISTS taxclass_counts;
-  # CREATE TABLE public.taxclass_counts AS SELECT taxclass, COUNT(species) AS numspecies FROM public.clean_gbif GROUP BY taxclass;
-  # GRANT SELECT ON public.taxclass_counts TO PUBLIC;
-  # create index db_numbyclass_idx on public.taxclass_counts(numspecies);
-  # alter table taxclass_counts add constraint taxclass_ct_pk primary key ( taxclass );
 
 
 
@@ -97,25 +75,17 @@ def summarize_db_by_taxorder( connection ):
       cursor.execute("""
           DROP TABLE IF EXISTS taxorder_counts;
           CREATE TABLE taxorder_counts AS
-          SELECT NULLIF( taxorder, 'Unknown') AS taxorder, COUNT(species) AS numspecies
+          SELECT taxorder, COUNT(species) AS numspecies
           FROM clean_gbif
           GROUP BY taxorder;
       """)
       connection.commit()
       cursor.execute("create index db_numbyorder_idx on taxorder_counts(numspecies);")
+      cursor.execute("update taxorder_counts set taxorder = 'Uknown' where taxorder IS NULL;")
       cursor.execute("alter table taxorder_counts add constraint taxorder_ct_pk primary key ( taxorder );")
 
 summarize_db_by_taxorder( connection )
 
-  # ## To run directly in terminal:
-  # tmux new -s taxorder_counts
-  # login to qaeco_spatial...
-  # 
-  # DROP TABLE IF EXISTS taxorder_counts;
-  # CREATE TABLE taxorder_counts AS SELECT taxorder, COUNT(species) AS numspecies FROM public.clean_gbif GROUP BY taxorder;
-  # GRANT SELECT ON public.taxorder_counts TO PUBLIC;
-  # create index db_numbyorder_idx on public.taxorder_counts(numspecies);
-  # alter table taxorder_counts add constraint taxorder_ct_pk primary key ( taxorder );
 
 
 
@@ -124,25 +94,15 @@ def summarize_db_by_taxfamily( connection ):
       cursor.execute("""
           DROP TABLE IF EXISTS taxfamily_counts;
           CREATE TABLE taxfamily_counts AS
-          SELECT NULLIF( taxfamily, 'Unknown') AS taxfamily, COUNT(species) AS numspecies
+          SELECT taxfamily, COUNT(species) AS numspecies
           FROM clean_gbif
           GROUP BY taxfamily;
       """)
       connection.commit()
       cursor.execute("create index db_numbyfamily_idx on taxfamily_counts(numspecies);")
+      cursor.execute("update taxfamily_counts set taxfamily = 'Uknown' where taxfamily IS NULL;")
       cursor.execute("alter table taxfamily_counts add constraint taxfamily_ct_pk primary key ( taxfamily );")
 
 summarize_db_by_taxfamily( connection )
-
-  # ## To run directly in terminal:
-  # tmux new -s taxfamily_counts
-  # login to qaeco_spatial...
-  # 
-  # DROP TABLE IF EXISTS taxfamily_counts;
-  # CREATE TABLE taxfamily_counts AS SELECT taxfamily, COUNT(species) AS numspecies FROM public.clean_gbif GROUP BY taxfamily;
-  # GRANT SELECT ON public.taxfamily_counts TO PUBLIC;
-  # create index db_numbyfamily_idx on public.taxfamily_counts(numspecies);
-  # alter table taxfamily_counts add constraint taxfamily_ct_pk primary key ( taxfamily );
-
 
 
