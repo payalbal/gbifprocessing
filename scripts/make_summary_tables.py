@@ -1,10 +1,10 @@
 import psycopg2
 
 connection = psycopg2.connect(
-    host="localhost",
-    database="qaeco_spatial",
-    user="qaeco",
-    password='B10D1v@rs1tyR0cks!!',
+    host="",
+    database="",
+    user="",
+    password='',
 )
 connection.autocommit = True
 
