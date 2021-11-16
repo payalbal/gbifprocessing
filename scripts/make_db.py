@@ -164,3 +164,11 @@ make_indices( connection )
 extra_clean( connection )
 make_count_table( connection )
 make_minor_table( connection )
+
+
+
+## Check for names with '
+# select * from species_counts where species like E'%\'%';
+##  gives one species with 5 records
+# select * from clean_gbif where species like E'%\'%';
+##  gives 0 species

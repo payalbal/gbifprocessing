@@ -26,6 +26,8 @@ Please use the following steps to set up the gbif database.
 4. Create summary tables from cleaned data
     python make_summary_tables.oy
 
+
+
 Enjoy!
 
 

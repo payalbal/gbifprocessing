@@ -27,7 +27,7 @@ def summarize_db_by_country( connection ):
 summarize_db_by_country( connection )
 
   # ## To run directly in terminal:
-  # tmux new -s counntry_counts
+  # tmux new -s country_counts
   # login to qaeco_spatial...
   # run queries directly + need to granrt access after creating table
   # GRANT SELECT ON public.country_counts TO PUBLIC;
@@ -104,5 +104,4 @@ def summarize_db_by_taxfamily( connection ):
       cursor.execute("alter table taxfamily_counts add constraint taxfamily_ct_pk primary key ( taxfamily );")
 
 summarize_db_by_taxfamily( connection )
-
 

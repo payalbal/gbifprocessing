@@ -13,7 +13,16 @@ system("python staging.py")
 syetm("python make_db.py")
 
 ## Delete script separated for safety
-system("python delete_lows.py")
+system("python delete_rows.py")
 
 ## Create summary tables
 system("make_summary_tables.py")
+
+
+## Create subset tables
+system("subset_gbif.py")
+
+library(reticulate)
+use_condaenv(condaenv = '~/environments/pyscripts', required = TRUE)
+py_run_string('import umap')
+

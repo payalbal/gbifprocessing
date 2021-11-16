@@ -2,6 +2,7 @@
 ##########################
 data/
 scripts/sample_py_sql.py
+scripts/connection.txt
 
 # R files #
 ###########
