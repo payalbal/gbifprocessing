@@ -1,5 +1,5 @@
 ## Activate python environment
-system("source ~/environments/gsdms_env/bin/activate")
+system("source /home/ubuntu/environments/gsdms_env/bin/activate") 
 
 ## Download the data in raw csv from gbif.org (the steps will work for both full count csv as well as selected row csv)
 ## citation: https://doi.org/10.15468/dl.e3jr2r
@@ -10,19 +10,16 @@ system("python downloadcsv.py")
 system("python staging.py")
 
 ## Make final data, clean and set up
-syetm("python make_db.py")
+system("python make_db.py")
 
 ## Delete script separated for safety
 system("python delete_rows.py")
 
 ## Create summary tables
-system("make_summary_tables.py")
+system("python make_summary_tables.py")
 
 
-## Create subset tables
-system("subset_gbif.py")
-
-library(reticulate)
-use_condaenv(condaenv = '~/environments/pyscripts', required = TRUE)
-py_run_string('import umap')
+## NOTE: ## source does not work in R. see https://stackoverflow.com/questions/13702425/source-command-not-found-in-sh-shell; either one of the two options below will
+# system(". /home/ubuntu/environments/gsdms_env/bin/activate")
+# system("bash -c 'source /home/ubuntu/environments/gsdms_env/bin/activate'")
 

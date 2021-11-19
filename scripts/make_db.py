@@ -147,15 +147,15 @@ def make_minor_table( connection ):
        """)
        connection.commit()
        cursor.execute("alter table low_counts add constraint low_ct_gbifid_pk primary key ( gbifid );")
-       #cursor.execute("""
-       #   DELETE FROM clean_gbif
-       #   WHERE species IN (
-       #        SELECT species
-       #        FROM species_counts
-       #        WHERE numvals <= 20
-       #     );
-       #""")
-       #connection.commit()
+       cursor.execute("""
+         DELETE FROM clean_gbif
+         WHERE species IN (
+              SELECT species
+              FROM species_counts
+              WHERE numvals <= 20
+           );
+       """)
+       connection.commit()
 
 create_db_table( connection )
 fill_table( connection )
