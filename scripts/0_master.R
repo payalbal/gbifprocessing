@@ -1,4 +1,4 @@
-## Activate python environment
+## Activate python environment (through terminal)
 system("source /home/ubuntu/environments/gsdms_env/bin/activate") 
 
 ## Download the data in raw csv from gbif.org (the steps will work for both full count csv as well as selected row csv)
@@ -21,5 +21,5 @@ system("python make_summary_tables.py")
 
 ## NOTE: ## source does not work in R. see https://stackoverflow.com/questions/13702425/source-command-not-found-in-sh-shell; either one of the two options below will
 # system(". /home/ubuntu/environments/gsdms_env/bin/activate")
-# system("bash -c 'source /home/ubuntu/environments/gsdms_env/bin/activate'")
+
 
