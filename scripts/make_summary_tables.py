@@ -21,7 +21,7 @@ def summarize_db_by_country( connection ):
       """)
       connection.commit()
       cursor.execute("create index db_numspecies_bycountry_idx on country_counts(numspecies);")
-      cursor.execute("update country_counts set countrycode = 'Uknown' where countrycode IS NULL;")
+      cursor.execute("update country_counts set countrycode = 'Unknown' where countrycode IS NULL;")
       cursor.execute("alter table country_counts add constraint country_ct_pk primary key ( countrycode );")
 
 summarize_db_by_country( connection )
@@ -31,8 +31,8 @@ summarize_db_by_country( connection )
   # login to qaeco_spatial...
   # run queries directly + need to granrt access after creating table
   # GRANT SELECT ON public.country_counts TO PUBLIC;
-  
-  
+
+
 
 def summarize_db_by_phylum( connection ):
   with connection.cursor() as cursor:
@@ -45,7 +45,7 @@ def summarize_db_by_phylum( connection ):
       """)
       connection.commit()
       cursor.execute("create index db_numbyphylum_idx on phylum_counts(numspecies);")
-      cursor.execute("update phylum_counts set phylum = 'Uknown' where phylum IS NULL;")
+      cursor.execute("update phylum_counts set phylum = 'Unknown' where phylum IS NULL;")
       cursor.execute("alter table phylum_counts add constraint phylum_ct_pk primary key ( phylum );")
 
 summarize_db_by_phylum( connection )
@@ -63,7 +63,7 @@ def summarize_db_by_taxclass( connection ):
       """)
       connection.commit()
       cursor.execute("create index db_numbyclass_idx on taxclass_counts(numspecies);")
-      cursor.execute("update taxclass_counts set taxclass = 'Uknown' where taxclass IS NULL;")
+      cursor.execute("update taxclass_counts set taxclass = 'Unknown' where taxclass IS NULL;")
       cursor.execute("alter table taxclass_counts add constraint taxclass_ct_pk primary key ( taxclass );")
 
 summarize_db_by_taxclass( connection )
@@ -81,11 +81,10 @@ def summarize_db_by_taxorder( connection ):
       """)
       connection.commit()
       cursor.execute("create index db_numbyorder_idx on taxorder_counts(numspecies);")
-      cursor.execute("update taxorder_counts set taxorder = 'Uknown' where taxorder IS NULL;")
+      cursor.execute("update taxorder_counts set taxorder = 'Unknown' where taxorder IS NULL;")
       cursor.execute("alter table taxorder_counts add constraint taxorder_ct_pk primary key ( taxorder );")
 
 summarize_db_by_taxorder( connection )
-
 
 
 
@@ -100,8 +99,28 @@ def summarize_db_by_taxfamily( connection ):
       """)
       connection.commit()
       cursor.execute("create index db_numbyfamily_idx on taxfamily_counts(numspecies);")
-      cursor.execute("update taxfamily_counts set taxfamily = 'Uknown' where taxfamily IS NULL;")
+      cursor.execute("update taxfamily_counts set taxfamily = 'Unknown' where taxfamily IS NULL;")
       cursor.execute("alter table taxfamily_counts add constraint taxfamily_ct_pk primary key ( taxfamily );")
 
 summarize_db_by_taxfamily( connection )
+
+
+
+def summarize_db_by_recyear( connection ):
+  with connection.cursor() as cursor:
+      cursor.execute("""
+          DROP TABLE IF EXISTS recyear_counts;
+          CREATE TABLE recyear_counts AS
+          SELECT recyear, COUNT(gbifid) AS numrecords
+          FROM clean_gbif
+          GROUP BY recyear;
+      """)
+      connection.commit()
+      cursor.execute("create index db_numbyrecyear_idx on recyear_counts(numrecords);")
+      cursor.execute("update recyear_counts set recyear = '0000' where recyear IS NULL;") 
+        ## cannot use 'Unknown' because recyear is an integrer column
+      cursor.execute("alter table recyear_counts add constraint recyear_ct_pk primary key ( recyear );")
+
+summarize_db_by_recyear( connection )
+
 

@@ -8,6 +8,7 @@ connection = psycopg2.connect(
 )
 connection.autocommit = True
 
+
 def create_db_table( connection ):
     with connection.cursor() as cursor:
        cursor.execute("""
@@ -36,6 +37,7 @@ def create_db_table( connection ):
              issue TEXT
          );
        """)
+
 
 def fill_table( connection ):
     with connection.cursor() as cursor:
@@ -83,6 +85,7 @@ def fill_table( connection ):
        """)
        connection.commit()
 
+
 def del_dup_gbifid( connection ):
     with connection.cursor() as cursor:
        cursor.execute("""
@@ -95,6 +98,7 @@ def del_dup_gbifid( connection ):
           ALTER TABLE clean_gbif DROP COLUMN is_uniq;
        """)
        connection.commit()
+
 
 def make_indices( connection ):
     with connection.cursor() as cursor:
@@ -122,6 +126,7 @@ def make_count_table( connection ):
        connection.commit()
        cursor.execute("alter table species_counts add constraint sp_ct_pk primary key ( species );")
 
+
 def extra_clean( connection ):
     with connection.cursor() as cursor:
        cursor.execute("""
@@ -131,6 +136,7 @@ def extra_clean( connection ):
            delete from clean_gbif where decimallongitude is null;
        """)
        connection.commit()
+
 
 def make_minor_table( connection ):
     with connection.cursor() as cursor:
@@ -147,15 +153,10 @@ def make_minor_table( connection ):
        """)
        connection.commit()
        cursor.execute("alter table low_counts add constraint low_ct_gbifid_pk primary key ( gbifid );")
-       cursor.execute("""
-         DELETE FROM clean_gbif
-         WHERE species IN (
-              SELECT species
-              FROM species_counts
-              WHERE numvals <= 20
-           );
-       """)
        connection.commit()
+    
+
+
 
 create_db_table( connection )
 fill_table( connection )
@@ -164,7 +165,6 @@ make_indices( connection )
 extra_clean( connection )
 make_count_table( connection )
 make_minor_table( connection )
-
 
 
 ## Check for names with '

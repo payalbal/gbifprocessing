@@ -1,8 +1,8 @@
 # Specific files/folders #
 ##########################
 data/
-scripts/sample_py_sql.py
 scripts/connection.txt
+scripts/connect_to_server.R
 
 # R files #
 ###########

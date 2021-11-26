@@ -10,7 +10,7 @@ rm(x)
 
 
 ## Connect to server
-source("~/gsdms_r_vol/tempdata/workdir/gsdms/scripts/connect_to_server.R")
+source("~/gsdms_r_vol/tempdata/workdir/gbifprocessing/scripts/connect_to_server.R")
 
 
 ## Filter parameters ####
@@ -19,7 +19,9 @@ start.year = 1950
 end.year = NULL
 
 ## Database ####
-dbname = "aves_reptilia"
+dbname = "gbif_aves"
+dbname = "gbif_mammalia"
+dbname = "gbif_reptilia"
 
 # # ## Trial db
 # dbSendQuery(con, sprintf("
@@ -162,10 +164,6 @@ dbSendQuery(con, "ALTER TABLE temp_spcounts add constraint tempsp_ct_pk primary 
 # 
 # dbSendQuery(con, "DROP TABLE IF EXISTS temp_spcounts;")
 
-
-
-
-## By backbone taxonomy...
 
 
 

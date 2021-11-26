@@ -11,7 +11,7 @@ rm(x)
 
 
 ## Connect to server
-source("~/gsdms_r_vol/tempdata/workdir/gsdms/scripts/connect_to_server.R")
+source("~/gsdms_r_vol/tempdata/workdir/gbifprocessing/scripts/connect_to_server.R")
 
 
 ## Specify subset class
