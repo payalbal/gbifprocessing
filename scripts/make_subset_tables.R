@@ -72,12 +72,12 @@ dbSendQuery(con, sprintf("create index %s_taxfamily_idx on %s (taxfamily);",
 
 
 ## Delete records with species information ####
-dbSendQuery(con, sprintf("delete from %s where scientificname = 'Uknown';",
+dbSendQuery(con, sprintf("delete from %s where scientificname = 'Unknown';",
                          dbname))
-dbSendQuery(con, sprintf("delete from %s where species = 'Uknown';", dbname))
-dbSendQuery(con, sprintf("delete from %s where genus = 'Uknown';", dbname))
-dbSendQuery(con, sprintf("update %s set taxorder = 'Uknown' where taxorder is null;", dbname))
-dbSendQuery(con, sprintf("update %s set taxfamily = 'Uknown' where taxfamily is null;", dbname))
+dbSendQuery(con, sprintf("delete from %s where species = 'Unknown';", dbname))
+dbSendQuery(con, sprintf("delete from %s where genus = 'Unknown';", dbname))
+dbSendQuery(con, sprintf("update %s set taxorder = 'Unknown' where taxorder is null;", dbname))
+dbSendQuery(con, sprintf("update %s set taxfamily = 'Unknown' where taxfamily is null;", dbname))
 
 
 

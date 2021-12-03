@@ -136,7 +136,7 @@ dbSendQuery(con, sprintf("
             GROUP BY species;", dbname))
 dbSendQuery(con, "ALTER TABLE temp_spcounts add constraint tempsp_ct_pk primary key ( species );")
 
-## Drop species
+## Drop species based on counts
 dbSendQuery(con, sprintf("
             DELETE FROM %s
             WHERE species IN (
@@ -165,7 +165,29 @@ dbSendQuery(con, "ALTER TABLE temp_spcounts add constraint tempsp_ct_pk primary 
 # dbSendQuery(con, "DROP TABLE IF EXISTS temp_spcounts;")
 
 
+## Drop species based on backbone matching
+dbSendQuery(con, sprintf("
+            DELETE FROM %s
+            WHERE species IN (
+            SELECT canonicalName
+            FROM backbone_taxonomy
+            WHERE taxonomicstatus = '...'
+            );", dbname))
 
+
+-- SELECT * FROM backbone_taxonomy
+-- 	WHERE taxonomicstatus = 'doubtful';
+
+SELECT DISTINCT taxonomicstatus
+FROM backbone_taxonomy;
+
+
+SELECT * FROM gbif_reptilia
+WHERE species IN (
+  SELECT canonicalName
+  FROM backbone_taxonomy
+  WHERE taxonomicstatus = 'accepted'
+);
 
 
 
