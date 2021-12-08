@@ -176,7 +176,7 @@ dbSendQuery(con, sprintf("
 
 
 -- SELECT * FROM backbone_taxonomy
--- 	WHERE taxonomicstatus = 'doubtful';
+-- 	WHERE taxonomicstatus IN 'accepted' ;
 
 SELECT DISTINCT taxonomicstatus
 FROM backbone_taxonomy;
