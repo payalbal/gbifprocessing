@@ -1,4 +1,5 @@
 ## Create GBIF subset tables
+## -- set up R scripts as jobs with arguments & in parallel for each subset.... (see notes below)
 
 
 ## Set working environment ####
@@ -102,3 +103,16 @@ dbSendQuery(con, sprintf("create index %s_spcounts_idx on %s%s(spcounts);", tolo
 # splist <- dbGetQuery(con, sprintf("select species from %s%s;", dbname, "_counts"))
 # splist <- splist$species
 # write.csv(splist, file = sprintf("/tempdata/research-cifs/uom_data/gsdms_data/gbif_clean/%s_splist.csv", tolower(tax.class)), row.names = FALSE)
+
+
+
+
+
+## NOTES ON SETTING UP BATCH SCRIPTS
+# Batch submission file: https://github.com/Doi90/JSDM_Prediction/blob/master/scripts/slurm/master_submit.slurm
+# Job submission file (called repeatedly by the former): https://github.com/Doi90/JSDM_Prediction/blob/master/scripts/slurm/master_slurm.slurm
+# R master script (called once per job submission file call): https://github.com/Doi90/JSDM_Prediction/blob/master/scripts/master/JSDM_Prediction_Master.R
+# 
+# * 		the first one looped over my different combos in bash, and called the second script once per combo
+# * 		second script (also in bash) creates the system call (L26) which is the important bit. The CLAs are the bits like $model following the filename
+# * 		the R script uses the commandArgs function to pull the CLAs into a vector that you can then use however you wish to control how the script works (with if statements or switch or whatever)

@@ -18,12 +18,13 @@ drop_fields = c()
 start.year = 1950
 end.year = NULL
 
-## Database ####
+## Specify database ####
 dbname = "gbif_aves"
 dbname = "gbif_mammalia"
 dbname = "gbif_reptilia"
 
-# # ## Trial db
+
+# ## (Trial db) ####
 # dbSendQuery(con, sprintf("
 #             DROP TABLE IF EXISTS aves_temp;
 #             CREATE TABLE aves_temp AS
@@ -32,18 +33,18 @@ dbname = "gbif_reptilia"
 #             LIMIT 500000;"))
 
 
-# ## Catch the original number of records in db (estimate) ####
-# N <- dbGetQuery(con, sprintf("
-#             SELECT reltuples::bigint AS estimate
-#             FROM pg_class WHERE oid = 'public.%s'::regclass;",
-#                              dbname))
-# 
-# ## Get db column names
-# db_cols <- dbGetQuery(con, sprintf("
-#                       SELECT column_name
-#                       FROM information_schema.columns
-#                       WHERE table_schema = 'public'
-#                       AND table_name = '%s';", dbname))$column_name
+## Catch the original number of records in db (estimate) ####
+N <- dbGetQuery(con, sprintf("
+            SELECT reltuples::bigint AS estimate
+            FROM pg_class WHERE oid = 'public.%s'::regclass;",
+                             dbname))
+
+## Get db column names
+db_cols <- dbGetQuery(con, sprintf("
+                      SELECT column_name
+                      FROM information_schema.columns
+                      WHERE table_schema = 'public'
+                      AND table_name = '%s';", dbname))$column_name
 
 
 ## Drop unwanted columns ####
@@ -58,10 +59,12 @@ if (length(drop_fields) < 0) {
 
 
 ## Filter by date range ####
-# dbGetQuery(con, sprintf("
-#             SELECT MIN(recyear) AS min,
-#             MAX(recyear) AS max
-#             FROM %s", dbname))
+## Already applied in make_db.py
+
+dbGetQuery(con, sprintf("
+            SELECT MIN(recyear) AS min,
+            MAX(recyear) AS max
+            FROM %s", dbname))
 
 ## https://stackoverflow.com/questions/23766084/best-way-to-check-for-empty-or-null-value
 if ((!is.null(start.year)) & (!is.null(end.year))) {
@@ -78,19 +81,22 @@ if ((!is.null(start.year)) & (!is.null(end.year))) {
                            dbname, end.year))
 }
 
-# dbGetQuery(con, sprintf("
-#             SELECT MIN(recyear) AS min,
-#             MAX(recyear) AS max
-#             FROM %s", dbname))
+## Check
+dbGetQuery(con, sprintf("
+            SELECT MIN(recyear) AS min,
+            MAX(recyear) AS max
+            FROM %s", dbname))
 
 
 ## Filter by basis of record ####
+## Already applied in make_db.py
 ## https://data-blog.gbif.org/post/living-specimen-to-preserved-specimen-understanding-basis-of-record/
 ## Darwin core: http://rs.gbif.org/vocabulary/dwc/basis_of_record.xml
 ## https://gbif.github.io/gbif-api/apidocs/org/gbif/api/vocabulary/BasisOfRecord.html
-# dbGetQuery(con, sprintf("
-#             SELECT DISTINCT(basisofrecord)
-#             FROM %s", dbname))
+
+dbGetQuery(con, sprintf("
+            SELECT DISTINCT(basisofrecord)
+            FROM %s", dbname))
 
 lookup_list = c("LITERATURE", "LIVING_SPECIMEN", "UNKNOWN", 
                 "FOSSIL_SPECIMEN")
@@ -106,7 +112,9 @@ if(!is.null(lookup_list)) {
 
 
 ## Filter by issues in data ####
+## Already applied in make_db.py
 ## https://data-blog.gbif.org/post/issues-and-flags/
+
 issue_geospatial = c("ZERO_COORDINATE", "COORDINATE_INVALID", "COORDINATE_OUT_OF_RANGE", 
                      "COUNTRY_COORDINATE_MISMATCH", "COORDINATE_REPROJECTION_FAILED", 
                      "COORDINATE_REPROJECTION_SUSPICIOUS", "GEODETIC_DATUM_INVALID")
@@ -153,50 +161,83 @@ dbSendQuery(con, sprintf("
             GROUP BY species;", dbname))
 dbSendQuery(con, "ALTER TABLE temp_spcounts add constraint tempsp_ct_pk primary key ( species );")
 
-# message(cat("species with <=20 records removed: "),
-#         nrow(dbGetQuery(con, sprintf("
-#             SELECT species
-#             FROM %s
-#             WHERE species IN (
-#             SELECT species
-#             FROM temp_spcounts
-#             WHERE spcounts <= 20)", dbname))) == 0)
-# 
-# dbSendQuery(con, "DROP TABLE IF EXISTS temp_spcounts;")
-
-
-## Drop species based on backbone matching
-dbSendQuery(con, sprintf("
-            DELETE FROM %s
+message(cat("species with <=20 records removed: "),
+        nrow(dbGetQuery(con, sprintf("
+            SELECT species
+            FROM %s
             WHERE species IN (
-            SELECT canonicalName
-            FROM backbone_taxonomy
-            WHERE taxonomicstatus = '...'
-            );", dbname))
+            SELECT species
+            FROM temp_spcounts
+            WHERE spcounts <= 20)", dbname))) == 0)
 
-
--- SELECT * FROM backbone_taxonomy
--- 	WHERE taxonomicstatus IN 'accepted' ;
-
-SELECT DISTINCT taxonomicstatus
-FROM backbone_taxonomy;
-
-
-SELECT * FROM gbif_reptilia
-WHERE species IN (
-  SELECT canonicalName
-  FROM backbone_taxonomy
-  WHERE taxonomicstatus = 'accepted'
-);
+dbSendQuery(con, "DROP TABLE IF EXISTS temp_spcounts;")
 
 
 
+## Dealing with synonyms - not needed ####
+## Note this is already dealt with in the 'species' column in data
+## See email exchange with GBIF helpdesk (Subject: Information on the GBIF backbone taxonomy)
+## SQL queries to check example in email
+# ## Check backbone for species name
+# -- SELECT DISTINCT taxonkey, specieskey
+# -- FROM gbif_aves
+# -- WHERE scientificname = 'Barnardius barnardi (Vigors & Horsfield, 1827)';
+# 
+# -- SELECT *
+# -- FROM backbone_taxonomy
+# -- WHERE scientificname = 'Barnardius barnardi (Vigors & Horsfield, 1827)';
+# 
+# -- SELECT *
+# -- FROM backbone_taxonomy
+# -- WHERE taxonid IN ('2479725','2479720', '6170505');
+# 
+# ## Check dataset for species name, 
+# ## note the 'species' column which gives the accpeted name as per backbone 
+# -- SELECT COUNT(1)
+# -- FROM gbif_aves
+# -- WHERE scientificname = 'Barnardius barnardi (Vigors & Horsfield, 1827)';
+# 
+# -- SELECT *
+#   -- FROM gbif_aves
+# -- WHERE scientificname = 'Barnardius barnardi (Vigors & Horsfield, 1827)';
+
+
+
+
+
+
+# ## https://www.cybertec-postgresql.com/en/postgresql-count-made-fast/
+# dbSendQuery(con, "CREATE FUNCTION row_estimator(query text) RETURNS bigint
+#                   LANGUAGE plpgsql AS
+#                   $$DECLARE
+#                   plan jsonb;
+#                   BEGIN
+#                   EXECUTE 'EXPLAIN (FORMAT JSON) ' || query INTO plan;
+#                   
+#                   RETURN (plan->0->'Plan'->>'Plan Rows')::bigint;
+#                   END;$$;")
+# 
+# ## https://www.citusdata.com/blog/2016/10/12/count-performance/#dup_counts_estimated_filtered
+# dbSendQuery(con, "CREATE FUNCTION count_estimate(query text) RETURNS integer 
+#                   AS $$
+#                   DECLARE
+#                     rec   record;
+#                     rows  integer;
+#                   BEGIN
+#                     FOR rec IN EXECUTE 'EXPLAIN ' || query LOOP
+#                       rows := substring(rec.\"QUERY PLAN\" FROM ' rows=([[:digit:]]+)');
+#                       EXIT WHEN rows IS NOT NULL;
+#                     END LOOP;
+#                     RETURN rows;
+#                   END;
+#                   $$ LANGUAGE plpgsql VOLATILE STRICT;
+#                   ")
 
 
 
 
 # ## ------
-# ## ADD TO PPM CODE ####
+# ## TO ADD TO PPM CODE ####
 # ## Filter by spatial domain 
 # if(!is.null(domain.mask)){
 #   

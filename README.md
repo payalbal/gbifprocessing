@@ -1,3 +1,4 @@
+## GBIF database creation and cleaning for GSDMS
 Authors: Usha Nattala, Payal Bal
 
 Please use the following steps to set up the gbif database.
@@ -24,13 +25,18 @@ Please use the following steps to set up the gbif database.
 3. Delete the csv under /data/csv if no longer required
 
 4. Create summary tables from cleaned data
-    python make_summary_tables.oy
+    python make_summary_tables.py
 
+5. First clean backbone taxonomy and set it up as a database
+    make_taxonomy_db.R
 
+6. Create subset GBIF tables, e.g. for different classes: aves, reptilia, mammalia
+    make_subset_table.R
+
+7. Clean subset GBIF tables
+    clean_subset_tables.R
 
 Enjoy!
-
-
 
 
 

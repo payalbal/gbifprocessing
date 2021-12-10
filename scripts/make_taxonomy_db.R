@@ -131,11 +131,12 @@ system(sprintf("export PGPASSWORD='%s'; psql -h localhost -U qaeco -d qaeco_spat
 
 
 
-
-
-
-
-
+## Drop 'doubtful' species
+## https://www.gbif.org/faq?question=what-does-the-taxon-status-doubtful-mean-and-when-is-used
+dbSendQuery(con, sprintf("
+            DELETE FROM backbone_taxonomy
+            WHERE taxonomicstatus = '%s'
+            AND acceptednameusageid is null;", "doubtful"))
 
 
 ## FOR LATER ####
