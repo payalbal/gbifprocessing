@@ -20,8 +20,8 @@ end.year = NULL
 
 ## Specify database ####
 dbname = "gbif_aves"
-dbname = "gbif_mammalia"
-dbname = "gbif_reptilia"
+# dbname = "gbif_mammalia"
+# dbname = "gbif_reptilia"
 
 
 # ## (Trial db) ####
@@ -161,6 +161,11 @@ dbSendQuery(con, sprintf("
             GROUP BY species;", dbname))
 dbSendQuery(con, "ALTER TABLE temp_spcounts add constraint tempsp_ct_pk primary key ( species );")
 
+# ## View temp_speounts
+# SELECT * 
+# FROM temp_spcounts
+# ORDER BY spcounts DESC;
+
 message(cat("species with <=20 records removed: "),
         nrow(dbGetQuery(con, sprintf("
             SELECT species
@@ -202,8 +207,36 @@ dbSendQuery(con, "DROP TABLE IF EXISTS temp_spcounts;")
 # -- WHERE scientificname = 'Barnardius barnardi (Vigors & Horsfield, 1827)';
 
 
+## Create species counts table & add primary key and indices ####
+dbSendQuery(con, sprintf("
+          drop table if exists %s%s;
+          create table %s%s as
+          select species, count(1) AS spcounts
+          from %s
+          group by species
+		      order by spcounts DESC;", "spcounts_", gsub("gbif_", "", dbname), "spcounts_", gsub("gbif_", "", dbname), dbname))
+
+dbSendQuery(con, sprintf("alter table %s%s add constraint %s_species_pk primary key ( species );",
+                         "spcounts_", gsub("gbif_", "", dbname), gsub("gbif_", "", dbname)))
+dbSendQuery(con, sprintf("create index %s_spcounts_idx on %s%s(spcounts);", gsub("gbif_", "", dbname), "spcounts_", gsub("gbif_", "", dbname)))
 
 
+## Create species list
+splist <- dbGetQuery(con, sprintf("select species from %s%s;", "spcounts_", gsub("gbif_", "", dbname)))
+splist <- splist$species
+write.csv(splist, file = sprintf("/tempdata/research-cifs/uom_data/gsdms_data/gbif/%s_splist.csv", gsub("gbif_", "", dbname)), row.names = FALSE)
+
+
+
+## Display number of records in subset tables ####
+print(sprintf("number of rows in subset %s db: ", dbname))
+dbGetQuery(con, sprintf("
+                        SELECT reltuples::bigint AS estimate
+                        FROM pg_class WHERE  oid = 'public.%s'::regclass;",
+                        dbname))
+
+message(sprintf("number of unique species in %s: ", dbname))
+dbGetQuery(con, sprintf("select count(*) from %s%s;", "spcounts_", gsub("gbif_", "", dbname)))
 
 
 # ## https://www.cybertec-postgresql.com/en/postgresql-count-made-fast/

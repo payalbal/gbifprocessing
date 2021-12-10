@@ -72,7 +72,7 @@ dbSendQuery(con, sprintf("create index %s_taxfamily_idx on %s (taxfamily);",
 
 
 
-## Delete records with species information ####
+## Delete records without species information ####
 dbSendQuery(con, sprintf("delete from %s where scientificname = 'Unknown';",
                          dbname))
 dbSendQuery(con, sprintf("delete from %s where species = 'Unknown';", dbname))
@@ -81,28 +81,6 @@ dbSendQuery(con, sprintf("update %s set taxorder = 'Unknown' where taxorder is n
 dbSendQuery(con, sprintf("update %s set taxfamily = 'Unknown' where taxfamily is null;", dbname))
 
 
-
-## Create species counts table & add primary key and indices ####
-dbSendQuery(con, sprintf("
-          drop table if exists %s%s;
-          create table %s%s as
-          select species, count(1) AS spcounts
-          from %s
-          group by species
-		      order by spcounts DESC;", "spcounts_", tolower(tax.class), "spcounts_", tolower(tax.class), dbname))
-
-dbSendQuery(con, sprintf("alter table %s%s add constraint %s_species_pk primary key ( species );",
-                         "spcounts_", tolower(tax.class), tolower(tax.class)))
-dbSendQuery(con, sprintf("create index %s_spcounts_idx on %s%s(spcounts);", tolower(tax.class), "spcounts_", tolower(tax.class)))
-
-# message(sprintf("Number of unique species in %s: ", dbname))
-# dbGetQuery(con, sprintf("select count(*) from %s%s;", dbname, "_counts"))
-
-
-# ## Create species list
-# splist <- dbGetQuery(con, sprintf("select species from %s%s;", dbname, "_counts"))
-# splist <- splist$species
-# write.csv(splist, file = sprintf("/tempdata/research-cifs/uom_data/gsdms_data/gbif_clean/%s_splist.csv", tolower(tax.class)), row.names = FALSE)
 
 
 
