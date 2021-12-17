@@ -24,15 +24,6 @@ dbname = "gbif_aves"
 # dbname = "gbif_reptilia"
 
 
-# ## (Trial db) ####
-# dbSendQuery(con, sprintf("
-#             DROP TABLE IF EXISTS aves_temp;
-#             CREATE TABLE aves_temp AS
-#             SELECT *
-#             FROM gbif_aves
-#             LIMIT 500000;"))
-
-
 ## Catch the original number of records in db (estimate) ####
 N <- dbGetQuery(con, sprintf("
             SELECT reltuples::bigint AS estimate
@@ -152,28 +143,28 @@ dbSendQuery(con, sprintf("
             FROM temp_spcounts
             WHERE spcounts <= 20);", dbname))
 
-## Check
-dbSendQuery(con, sprintf("
-            DROP TABLE IF EXISTS temp_spcounts;
-            CREATE TABLE temp_spcounts AS
-            SELECT species, count(1) spcounts
-            FROM %s
-            GROUP BY species;", dbname))
-dbSendQuery(con, "ALTER TABLE temp_spcounts add constraint tempsp_ct_pk primary key ( species );")
+  # ## Check
+  # dbSendQuery(con, sprintf("
+  #             DROP TABLE IF EXISTS temp_spcounts;
+  #             CREATE TABLE temp_spcounts AS
+  #             SELECT species, count(1) spcounts
+  #             FROM %s
+  #             GROUP BY species;", dbname))
+  # dbSendQuery(con, "ALTER TABLE temp_spcounts add constraint tempsp_ct_pk primary key ( species );")
 
-# ## View temp_speounts
-# SELECT * 
-# FROM temp_spcounts
-# ORDER BY spcounts DESC;
+  # ## View temp_speounts
+  # SELECT * 
+  # FROM temp_spcounts
+  # ORDER BY spcounts DESC;
 
-message(cat("species with <=20 records removed: "),
-        nrow(dbGetQuery(con, sprintf("
-            SELECT species
-            FROM %s
-            WHERE species IN (
-            SELECT species
-            FROM temp_spcounts
-            WHERE spcounts <= 20)", dbname))) == 0)
+  # message(cat("species with <=20 records removed: "),
+  #         nrow(dbGetQuery(con, sprintf("
+  #             SELECT species
+  #             FROM %s
+  #             WHERE species IN (
+  #             SELECT species
+  #             FROM temp_spcounts
+  #             WHERE spcounts <= 20)", dbname))) == 0)
 
 dbSendQuery(con, "DROP TABLE IF EXISTS temp_spcounts;")
 
@@ -207,6 +198,14 @@ dbSendQuery(con, "DROP TABLE IF EXISTS temp_spcounts;")
 # -- WHERE scientificname = 'Barnardius barnardi (Vigors & Horsfield, 1827)';
 
 
+
+## Add points goematry column to GBIF data tables ####
+dbSendQuery(con, sprintf("ALTER TABLE %s ADD COLUMN points_geom geometry(Point, 4326);", dbname))
+dbSendQuery(con, sprintf("UPDATE %s SET points_geom = ST_SetSRID(ST_MakePoint(decimallongitude, decimallatitude), 4326);", dbname))
+dbSendQuery(con, sprintf("CREATE INDEX %s ON public.%s USING GIST (points_geom);", paste0(dbname, "_geom_idx"), dbname))
+
+
+
 ## Create species counts table & add primary key and indices ####
 dbSendQuery(con, sprintf("
           drop table if exists %s%s;
@@ -228,17 +227,22 @@ write.csv(splist, file = sprintf("/tempdata/research-cifs/uom_data/gsdms_data/gb
 
 
 
-## Display number of records in subset tables ####
-print(sprintf("number of rows in subset %s db: ", dbname))
-dbGetQuery(con, sprintf("
-                        SELECT reltuples::bigint AS estimate
-                        FROM pg_class WHERE  oid = 'public.%s'::regclass;",
-                        dbname))
+  # ## Display number of records in subset tables ####
+  # print(sprintf("number of rows in subset %s db: ", dbname))
+  # dbGetQuery(con, sprintf("
+  #                         SELECT reltuples::bigint AS estimate
+  #                         FROM pg_class WHERE  oid = 'public.%s'::regclass;",
+  #                         dbname))
+  # 
+  # message(sprintf("number of unique species in %s: ", dbname))
+  # dbGetQuery(con, sprintf("select count(*) from %s%s;", "spcounts_", gsub("gbif_", "", dbname)))
 
-message(sprintf("number of unique species in %s: ", dbname))
-dbGetQuery(con, sprintf("select count(*) from %s%s;", "spcounts_", gsub("gbif_", "", dbname)))
 
 
+
+
+## EXTRA 
+# ## Creating functions
 # ## https://www.cybertec-postgresql.com/en/postgresql-count-made-fast/
 # dbSendQuery(con, "CREATE FUNCTION row_estimator(query text) RETURNS bigint
 #                   LANGUAGE plpgsql AS
@@ -267,107 +271,19 @@ dbGetQuery(con, sprintf("select count(*) from %s%s;", "spcounts_", gsub("gbif_",
 #                   ")
 
 
-
-
-# ## ------
-# ## TO ADD TO PPM CODE ####
-# ## Filter by spatial domain 
-# if(!is.null(domain.mask)){
-#   
-#   ## Filter by extent 
-#   dat <- dat[which(decimallongitude > domain.mask@extent@xmin)]
-#   dat <- dat[which(decimallongitude < domain.mask@extent@xmax)]
-#   dat <- dat[which(decimallatitude > domain.mask@extent@ymin)]
-#   dat <- dat[which(decimallatitude < domain.mask@extent@ymax)]
-#   
-#   ## Filter by location on spatial grid (remove points falling outside of mask)
-#   sp <- SpatialPoints(dat[,.(decimallongitude,decimallatitude)])
-#   grd.pts<-extract(domain.mask, sp)
-#   dat <- dat[!is.na(grd.pts),]
-#   
-# } else {
-#   warning("domain.mask not provided")
-# }
-# 
-# ## Remove spatial duplicates if TRUE
-# ## identified by species name and coordinates to give only one record for a location
-# if(remove_duplicates == TRUE){
-#   dat <- unique(dat, by =c("species", "decimallongitude", "decimallatitude"))
-# }
-# 
-# 
-# ## Retain species with >= 20 occurrences
-# dat <- dat[dat$species %in% names(which(table(dat$species) >= 20)),]
-# 
-# ## Create cleaned data file for modelling + log file of how it was created
-# if(is.null(select_fields)){
-#   select_fields = c("gbifid", "species", "decimallatitude", "decimallongitude", "taxonkey")
-# } else {
-#   check_fields = all(select_fields %in% names(dat))
-#   if(!check_fields){
-#     select_fields = c("gbifid", "species", "decimallatitude", "decimallongitude", "taxonkey", "issue")
-#     warning("Specified select_fields were not found in the dataset - returning default fields instead")
-#   } else {
-#     select_fields = c(select_fields)
-#   }
-# }
-# dat <- dat[, select_fields, with = FALSE]
-# 
-# ## Write the data to file, if an output folder is specified
-# if(!is.null(output_folder))
-# {
-#   if(!dir.exists(output_folder))
+# ## Run as job within script
+# job::job(
+#   import = NULL,
+#   packages = c("DBI", "RPostgreSQL"),
 #   {
-#     dir.create(output_folder)
-#   } # end if !dir.exists
-#   
-#   output_path <- file.path(output_folder,paste0(Sys.Date(), "_", output_name,".csv"))
-#   write.csv(dat, output_path, row.names=FALSE)
-#   
-#   ## Write a log file describing how the data was created *************************************
-#   fileConn<-file(file.path(output_folder,paste0(output_name,"_",Sys.Date(),"_log_file.txt")),'w')
-#   writeLines("#######################################################################",con = fileConn)
-#   writeLines("###",con = fileConn)
-#   writeLines("### GBIF data filtration log file ",con = fileConn)
-#   writeLines("###",con = fileConn)
-#   writeLines(paste0("### Created ",Sys.time()," using the filter_gbif_data() function."),con = fileConn)
-#   writeLines("###",con = fileConn)
-#   writeLines("#######################################################################",con = fileConn)
-#   writeLines("",con = fileConn)
-#   writeLines(paste0("Output data file = ", output_path),con = fileConn)
-#   writeLines(paste0("Domain mask applied = ", domain.mask@file@name),con = fileConn)
-#   writeLines(paste0("Data restricted to after ", start.year),con = fileConn)
-#   writeLines(paste0("Data restricted to spatial uncertainty < ",spatial.uncertainty.m, "m"),con = fileConn)
-#   writeLines(paste0("Spatial duplicates ", if(remove_duplicates == TRUE){"removed"}else{"retained"},con = fileConn))
-#   writeLines(paste0("Number of records before filtering = ", n.rec.start),con = fileConn)
-#   writeLines(paste0("Number of records after filtering = ", nrow(dat)),con = fileConn)
-#   writeLines("#######################################################################",con = fileConn)
-#   close(fileConn) 
-#   ## *****************************************************************************************
-# } # end !is.null(output_folder)
-# 
-# # write some feedback to the terminal
-# if(verbose)
-# {
-#   msg1 = 'Returned object is a data.table'
-#   msg2 = paste('These data have been also been written to ', output_path)
-#   msg3 = paste("# records in raw data = ", n.rec.start)
-#   msg4 = paste("# records in filtered data = ", dim(dat)[1])
-#   msg5 = paste("# records removed =", n.rec.start-dim(dat)[1])
-#   msg6 = paste0("Spatial duplicates ", if(remove_duplicates == TRUE){"removed"}else{"retained"})
-#   cat(paste(msg1, msg2, msg3, msg4, msg5, msg6, sep = '\n'))
-# } # end if(verbose)
-# 
-# return(dat)
-# 
-# 
-# 
-# ## NOT VALID BECAUSE FIELD NOT RETAINED IN DATABASE
-# ## Filter by coordinate uncertainty (if 'coordinateuncertaintyinmeters' field is provided)
-# if("coordinateuncertaintyinmeters" %in% filter_fields){
-#   dat <- dat[!which(coordinateuncertaintyinmeters > spatial.uncertainty.m)]}
-# ## note: !which() retains NAs unline which()
-# 
-# ## Filter records by coordinate precision i.e. records with less than 2 decimal places
-# dat <- dat[!which(sapply((strsplit(sub('0+$', '', as.character(dat$decimallongitude)), ".", fixed = TRUE)), function(x) nchar(x[2])) < 2)]
-# dat <- dat[!which(sapply((strsplit(sub('0+$', '', as.character(dat$decimallatitude)), ".", fixed = TRUE)), function(x) nchar(x[2])) < 2)]
+#     ## Connection to db
+#     source("~/gsdms_r_vol/tempdata/workdir/gbifprocessing/scripts/connect_to_server.R")
+#     
+#     ## Specify table
+#     dbname = "gbif_reptilia"
+#     
+#     ## Run queries
+#     dbSendQuery(con, sprintf("ALTER TABLE %s ADD COLUMN points_geom geometry(Point, 4326);", dbname))
+#     dbSendQuery(con, sprintf("UPDATE %s SET points_geom = ST_SetSRID(ST_MakePoint(decimallongitude, decimallatitude), 4326);", dbname))
+#     dbSendQuery(con, sprintf("CREATE INDEX %s ON public.%s USING GIST (points_geom);", paste0(dbname, "_geom_idx"), dbname))
+#   })

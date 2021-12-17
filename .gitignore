@@ -3,6 +3,8 @@
 data/
 scripts/connection.txt
 scripts/connect_to_server.R
+scripts/job.R
+scripts/extras/
 
 # R files #
 ###########

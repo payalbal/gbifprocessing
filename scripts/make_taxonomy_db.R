@@ -90,7 +90,7 @@ length(backbone$canonicalName[which(sp_words == 2)])
 fwrite(backbone, file.path(gsdms_dir, "outputs/gbif_clean/backbone_taxonomy.csv"))
 
 ## Create db ####
-## >> Create rmpty table ####
+## >> Create empty table ####
 backbone <- fread(file.path(gsdms_dir, "outputs/gbif_clean/backbone_taxonomy.csv"))
 dbSendQuery(con, paste0("DROP TABLE IF EXISTS backbone_taxonomy;
             CREATE TABLE backbone_taxonomy ( ", 
