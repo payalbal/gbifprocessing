@@ -199,7 +199,7 @@ dbSendQuery(con, "DROP TABLE IF EXISTS temp_spcounts;")
 
 
 
-## Add points goematry column to GBIF data tables ####
+## Add points geometry column to GBIF data tables ####
 dbSendQuery(con, sprintf("ALTER TABLE %s ADD COLUMN points_geom geometry(Point, 4326);", dbname))
 dbSendQuery(con, sprintf("UPDATE %s SET points_geom = ST_SetSRID(ST_MakePoint(decimallongitude, decimallatitude), 4326);", dbname))
 dbSendQuery(con, sprintf("CREATE INDEX %s ON public.%s USING GIST (points_geom);", paste0(dbname, "_geom_idx"), dbname))

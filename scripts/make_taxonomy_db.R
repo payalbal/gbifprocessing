@@ -127,7 +127,7 @@ system(sprintf("export PGPASSWORD='%s'; psql -h localhost -U qaeco -d qaeco_spat
   #             FROM '%s'
   #             DELIMITER ','
   #             CSV HEADER;", 
-  #           file.path(gsdms_dir, "outputs/gbif_clean/backbone_temp.csv")))
+  #           file.path(gsdms_dir, "outputs/gbif_clean/backbone_taxonomy.csv")))
 
 
 

@@ -1,4 +1,5 @@
 ## Create GBIF postgres database ####
+
 ## >> Running python scripts from terminal ####
 ## Activate python environment
 system("source /home/ubuntu/environments/gsdms_env/bin/activate") 
@@ -22,6 +23,9 @@ system("python make_summary_tables.py")
 
 
 ## >> Running python scripts from R ####
+## Note: System call to bash file which 
+## (1) activates python environment and 
+## (2) calls python script files, sparate file as per steps listed above
 system("bash /tempdata/workdir/gbifprocessing/scripts/run_python_scripts.sh")
 
 ## NOTE: 
